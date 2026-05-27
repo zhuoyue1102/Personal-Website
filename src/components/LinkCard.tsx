@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Instagram, GraduationCap, Video, ExternalLink, Bookmark, Award, Play, Eye, Flame, Share2, Sparkles } from 'lucide-react';
+import { Instagram, GraduationCap, Video, ExternalLink, Bookmark, Award, Play, Eye, Flame, Share2, Sparkles, ArrowUpRight } from 'lucide-react';
 import { ProfileConfig, LinkItem } from '../types';
 import { ThemeColors, MOCK_SCHOLAR_PAPERS, MOCK_BILIBILI_VIDEOS, MOCK_INSTAGRAM_POSTS } from '../data';
 
@@ -155,17 +155,34 @@ export default function LinkCard({ platform, config, colors, liveStats }: LinkCa
 
                 <div className="space-y-3">
                   {papersToUse.map((paper: any, idx: number) => (
-                    <div
+                    <a
                       key={idx}
-                      className="p-3.5 rounded-xl bg-black/5 dark:bg-white/5 border border-black/[0.03] dark:border-white/[0.03] flex flex-col gap-1.5 group"
+                      href={paper.url || details.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3.5 rounded-xl bg-black/5 dark:bg-white/5 border border-black/[0.03] dark:border-white/[0.03] flex items-center justify-between gap-4 group hover:bg-black/[0.08] dark:hover:bg-white/[0.08] transition-all duration-200 cursor-pointer text-left"
                     >
-                      <h5 className={`font-medium text-xs md:text-sm leading-snug ${colors.textPrimary} group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors`}>
-                        {paper.title}
-                      </h5>
-                      <p className={`text-[11px] font-mono ${colors.textSecondary}`}>
-                        {paper.authors} • <span className="italic">{cleanJournalName(paper.journal)}</span> ({paper.year})
-                      </p>
-                    </div>
+                      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                        <h5 className={`font-medium text-xs md:text-sm leading-snug ${colors.textPrimary} group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors flex items-center gap-1.5`}>
+                          <span className="line-clamp-2 md:line-clamp-none">{paper.title}</span>
+                          <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-indigo-500 dark:text-indigo-400" />
+                        </h5>
+                        <p className={`text-[11px] font-mono ${colors.textSecondary}`}>
+                          {paper.authors} • <span className="italic">{cleanJournalName(paper.journal)}</span> ({paper.year})
+                        </p>
+                      </div>
+
+                      {paper.citations !== undefined && (
+                        <div className="flex flex-col items-center justify-center shrink-0 min-w-[72px] px-2.5 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/15 text-center">
+                          <span className="text-sm md:text-base font-black font-mono leading-none">
+                            {paper.citations}
+                          </span>
+                          <span className="text-[8px] md:text-[9px] uppercase tracking-wider font-mono opacity-80 mt-1 leading-none">
+                            Citations
+                          </span>
+                        </div>
+                      )}
+                    </a>
                   ))}
                 </div>
               </div>

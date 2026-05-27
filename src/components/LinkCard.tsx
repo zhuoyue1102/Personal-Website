@@ -27,21 +27,23 @@ export default function LinkCard({ platform, config, colors, liveStats }: LinkCa
   const getPlatformDetails = () => {
     switch (platform) {
       case 'scholar': {
-        const citations = liveStats?.scholar?.citations !== undefined ? String(liveStats.scholar.citations) : '2';
+        const citations = config.scholarCitations || String(liveStats?.scholar?.citations || '294');
+        const hIndex = config.scholarHIndex || String(liveStats?.scholar?.hIndex || '5');
+        const i10Index = config.scholarI10Index || String(liveStats?.scholar?.i10Index || '5');
         return {
           title: 'Google Scholar',
-          username: liveStats?.scholar?.name || config.scholarUsername || 'Zhuoyue',
+          username: config.scholarName || liveStats?.scholar?.name || config.scholarUsername || 'Zhuo Yue',
           url: config.scholarUrl,
           icon: <GraduationCap className="w-6 h-6 text-indigo-400" id="icon-scholar" />,
           colorTheme: 'from-[#e0e7ff] to-[#c7d2fe]',
           badgeText: 'Academic Profile',
-          description: 'Peer-reviewed articles, citations state, and published conference machine learning pipelines.',
-          quickStats: { main: citations, label: 'Citations', sub: '' },
+          description: `Peer-reviewed publications, citation index, and biomedical machine learning models. H-Index: ${hIndex} | i10-Index: ${i10Index}`,
+          quickStats: { main: citations, label: 'Citations', sub: `H-Index: ${hIndex}` },
         };
       }
       case 'instagram': {
-        const follower = liveStats?.instagram?.follower || '2.4K';
-        const posts = liveStats?.instagram?.posts || '128';
+        const follower = config.instagramFollower || liveStats?.instagram?.follower || '1,520';
+        const posts = config.instagramPosts || liveStats?.instagram?.posts || '128';
         return {
           title: 'Instagram',
           username: config.instagramUsername || '@jasonlalala_zy',
@@ -49,17 +51,17 @@ export default function LinkCard({ platform, config, colors, liveStats }: LinkCa
           icon: <Instagram className="w-6 h-6 text-pink-500" id="icon-instagram" />,
           colorTheme: 'from-[#fdf2f8] to-[#fbcfe8]',
           badgeText: 'Lifestyle & Photography',
-          description: 'Visual chronicles, capture frames, travel logs, and transient thoughts.',
+          description: config.instagramBio || 'Visual chronicles, capture frames, travel logs, and transient thoughts.',
           quickStats: { main: follower, label: 'Followers', sub: `${posts} Posts` },
         };
       }
       case 'bilibili': {
-        const follower = liveStats?.bilibili?.follower !== undefined ? formatNumber(liveStats.bilibili.follower) : '18.5K';
-        const views = liveStats?.bilibili?.views !== undefined ? formatNumber(liveStats.bilibili.views) : '650K';
-        const bBio = liveStats?.bilibili?.bio || config.bilibiliUsername || '卓越日常Space';
+        const follower = config.bilibiliFollower || (liveStats?.bilibili?.follower !== undefined ? formatNumber(liveStats.bilibili.follower) : '18,500');
+        const views = config.bilibiliViews || (liveStats?.bilibili?.views !== undefined ? formatNumber(liveStats.bilibili.views) : '650,000');
+        const bBio = config.bilibiliBio || liveStats?.bilibili?.bio || '卓呆呆啦啦啦 | UID: 284956483';
         return {
           title: 'Bilibili',
-          username: liveStats?.bilibili?.name || '卓越的日常',
+          username: config.bilibiliName || liveStats?.bilibili?.name || '卓越的日常',
           url: config.bilibiliUrl,
           icon: <Video className="w-6 h-6 text-sky-400" id="icon-bilibili" />,
           colorTheme: 'from-[#e0f2fe] to-[#bae6fd]',
@@ -82,7 +84,9 @@ export default function LinkCard({ platform, config, colors, liveStats }: LinkCa
     return journal.trim();
   };
 
-  const papersToUse = liveStats?.scholar?.papers?.length > 0 ? liveStats.scholar.papers : MOCK_SCHOLAR_PAPERS;
+  const papersToUse = config.scholarPapers && config.scholarPapers.length > 0 
+    ? config.scholarPapers 
+    : (liveStats?.scholar?.papers?.length > 0 ? liveStats.scholar.papers : MOCK_SCHOLAR_PAPERS);
 
   return (
     <motion.div
@@ -188,77 +192,94 @@ export default function LinkCard({ platform, config, colors, liveStats }: LinkCa
               </div>
             )}
 
-            {platform === 'instagram' && (
-              <div className="space-y-3">
-                <h4 className={`text-xs uppercase tracking-widest font-mono font-bold ${colors.textSecondary} flex items-center gap-1.5`}>
-                  <Sparkles className="w-3.5 h-3.5 text-pink-500" /> Recent Frames Feed
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {MOCK_INSTAGRAM_POSTS.map((post, idx) => (
-                    <div
-                      key={idx}
-                      className="aspect-square rounded-xl overflow-hidden relative group cursor-pointer border border-black/5 dark:border-white/5"
-                    >
-                      <img
-                        src={post.imageUrl}
-                        alt="Instagram Feed Item"
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white text-xs font-mono font-medium">
-                        <span className="flex items-center gap-1">❤️ {post.likes}</span>
-                        <span className="flex items-center gap-1">💬 {post.comments}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {platform === 'bilibili' && (
-              <div className="space-y-3">
-                <h4 className={`text-xs uppercase tracking-widest font-mono font-bold ${colors.textSecondary} flex items-center gap-1.5`}>
-                  <Flame className="w-3.5 h-3.5 text-orange-500" /> Latest Uploaded Videos
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {MOCK_BILIBILI_VIDEOS.map((video, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-xl overflow-hidden bg-black/5 dark:bg-white/5 border border-black/[0.03] dark:border-white/[0.03] group cursor-pointer"
-                    >
-                      <div className="aspect-video relative overflow-hidden bg-zinc-800">
+            {platform === 'instagram' && (() => {
+              const postsToUse = config.instagramPostsList && config.instagramPostsList.length > 0
+                ? config.instagramPostsList
+                : MOCK_INSTAGRAM_POSTS;
+              return (
+                <div className="space-y-3">
+                  <h4 className={`text-xs uppercase tracking-widest font-mono font-bold ${colors.textSecondary} flex items-center gap-1.5`}>
+                    <Sparkles className="w-3.5 h-3.5 text-pink-500" /> Recent Frames Feed
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    {postsToUse.map((post: any, idx: number) => (
+                      <a
+                        key={idx}
+                        href={post.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="aspect-square rounded-xl overflow-hidden relative group cursor-pointer border border-black/5 dark:border-white/5 block"
+                      >
                         <img
-                          src={video.imageUrl}
-                          alt="Video Cover"
+                          src={post.imageUrl}
+                          alt="Instagram Feed Item"
                           referrerPolicy="no-referrer"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 flex justify-between items-center text-[10px] text-white font-mono">
-                          <span className="flex items-center gap-0.5">
-                            <Eye className="w-3 h-3 text-sky-400" /> {video.playCount}
-                          </span>
-                          <span>{video.duration}</span>
-                        </div>
-                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <div className="p-2.5 rounded-full bg-sky-500 text-white shadow-lg">
-                            <Play className="w-4 h-4 fill-white ml-0.5" />
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {platform === 'bilibili' && (() => {
+              const videosToUse = config.bilibiliVideosList && config.bilibiliVideosList.length > 0
+                ? config.bilibiliVideosList
+                : MOCK_BILIBILI_VIDEOS;
+              return (
+                <div className="space-y-3">
+                  <h4 className={`text-xs uppercase tracking-widest font-mono font-bold ${colors.textSecondary} flex items-center gap-1.5`}>
+                    <Flame className="w-3.5 h-3.5 text-orange-500" /> Latest Uploaded Videos
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {videosToUse.map((video: any, idx: number) => (
+                      <a
+                        key={idx}
+                        href={video.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-xl overflow-hidden bg-black/5 dark:bg-white/5 border border-black/[0.03] dark:border-white/[0.03] group hover:bg-black/[0.08] dark:hover:bg-white/[0.08] transition-all block"
+                      >
+                        <div className="aspect-video relative overflow-hidden bg-zinc-850">
+                          <img
+                            src={video.imageUrl}
+                            alt="Video Cover"
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 flex justify-between items-center text-[10px] text-white font-mono">
+                            <span className="flex items-center gap-0.5">
+                              {video.playCount ? (
+                                <>
+                                  <Eye className="w-3 h-3 text-sky-400" /> {video.playCount}
+                                </>
+                              ) : null}
+                            </span>
+                            <span>{video.duration}</span>
+                          </div>
+                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="p-2.5 rounded-full bg-sky-500 text-white shadow-lg">
+                              <Play className="w-4 h-4 fill-white ml-0.5" />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="p-2.5">
-                        <h5 className="font-medium text-xs leading-snug line-clamp-2 text-zinc-800 dark:text-zinc-200 group-hover:text-sky-500 transition-colors">
-                          {video.title}
-                        </h5>
-                        <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 dark:text-zinc-400 mt-2">
-                          <span>👍 {video.likes} likes</span>
-                          <span>💬 {video.danmakuCount} dm</span>
+                        <div className="p-2.5 text-left">
+                          <h5 className="font-medium text-xs leading-snug line-clamp-2 text-zinc-800 dark:text-zinc-200 group-hover:text-sky-500 transition-colors">
+                            {video.title}
+                          </h5>
+                          <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 dark:text-zinc-400 mt-2">
+                            <span>👍 {video.likes} likes</span>
+                            <span>💬 {video.comments || video.danmakuCount || '0'} dm</span>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </motion.div>
         )}
       </AnimatePresence>

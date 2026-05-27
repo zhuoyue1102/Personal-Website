@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Mail, Settings, Share2, Check, Sparkles, AlertCircle, ArrowUpRight } from 'lucide-react';
+import { MapPin, Mail, Settings, Share2, Check, Sparkles, AlertCircle, ArrowUpRight, Sun, Moon } from 'lucide-react';
 import { ProfileConfig } from './types';
 import { DEFAULT_PROFILE, THEME_PRESETS } from './data';
 import LinkCard from './components/LinkCard';
@@ -41,6 +41,20 @@ export default function App() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
 
+  const fetchServerConfig = () => {
+    fetch('/api/profile-config')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to retrieve server configuration');
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.config) {
+          setConfig(data.config);
+        }
+      })
+      .catch((err) => console.error('Failed to query custom configuration:', err));
+  };
+
   const fetchLiveStats = () => {
     setStatsLoading(true);
     fetch('/api/profile-stats')
@@ -57,6 +71,7 @@ export default function App() {
   };
 
   useEffect(() => {
+    fetchServerConfig();
     fetchLiveStats();
   }, []);
 
@@ -64,7 +79,26 @@ export default function App() {
     localStorage.setItem('personal_links_config', JSON.stringify(config));
   }, [config]);
 
-  const activeTheme = THEME_PRESETS[config.themePreset] || THEME_PRESETS['warm-sand'];
+  // Determine if it is currently daytime (6:00 AM to 6:00 PM) for the visitor
+  const [isDay, setIsDay] = useState(() => {
+    const hour = new Date().getHours();
+    return hour >= 6 && hour < 18;
+  });
+
+  // Periodically refresh the day/night state in case they leave page open
+  useEffect(() => {
+    const handle = setInterval(() => {
+      const hour = new Date().getHours();
+      setIsDay(hour >= 6 && hour < 18);
+    }, 60000);
+    return () => clearInterval(handle);
+  }, []);
+
+  const resolvedPreset = config.themePreset === 'auto'
+    ? (isDay ? 'warm-sand' : 'cosmic')
+    : config.themePreset;
+
+  const activeTheme = THEME_PRESETS[resolvedPreset] || THEME_PRESETS['warm-sand'];
 
   const handleSave = (newConfig: ProfileConfig) => {
     setConfig(newConfig);
@@ -225,18 +259,13 @@ export default function App() {
             <span className={`text-[11px] font-mono tracking-widest uppercase font-bold ${activeTheme.textSecondary}`}>
               Websites & Links
             </span>
-            <button
-              onClick={fetchLiveStats}
-              disabled={statsLoading}
-              className="flex items-center gap-1.5 cursor-pointer hover:opacity-85 active:scale-95 transition-all text-left bg-transparent border-0 outline-none p-0 disabled:pointer-events-none"
-              title="Click to manually refresh stats"
-            >
-              <span className={`w-2 h-2 rounded-full ${statsLoading ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500'}`} />
-              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wide">
-                {statsLoading ? 'Refreshing...' : 'Auto Live Sync'}
-              </span>
-            </button>
           </div>
+
+          {config.themePreset === 'auto' && (
+            <div className="flex items-center justify-center select-none text-xl md:text-2xl animate-[pulse_2.5s_infinite_ease-in-out]" title={isDay ? "Daytime (Warm Sand)" : "Nighttime (Cosmic Slate)"}>
+              {isDay ? "☀️" : "🌙"}
+            </div>
+          )}
         </div>
 
         {/* Links Cards List (Instagram, Bilibili, Google Scholar) */}

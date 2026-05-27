@@ -14,7 +14,100 @@ export const DEFAULT_PROFILE: ProfileConfig = {
   bilibiliUsername: '卓呆呆啦啦啦 (UID 284956483)',
   scholarUrl: 'https://scholar.google.com/citations?user=Q82dL_IAAAAJ&hl=en',
   scholarUsername: 'Zhuo Yue',
-  themePreset: 'cosmic',
+  themePreset: 'auto',
+
+  // Default editable manual stats
+  scholarCitations: '294',
+  scholarHIndex: '5',
+  scholarI10Index: '5',
+  scholarName: 'Zhuo Yue',
+  
+  instagramFollower: '1,520',
+  instagramFollowing: '450',
+  instagramPosts: '128',
+  instagramName: 'Jason Zhao (@jasonlalala_zy)',
+  instagramBio: 'Living, learning, and framing lifestyle moments.',
+  
+  bilibiliFollower: '18,500',
+  bilibiliFollowing: '120',
+  bilibiliViews: '650,000',
+  bilibiliLikes: '28,000',
+  bilibiliName: '卓越的日常',
+  bilibiliBio: '卓呆呆啦啦啦 | UID: 284956483',
+
+  scholarPapers: [
+    {
+      title: 'Enhancing drug solubility, bioavailability, and targeted therapeutic applications through magnetic nanoparticles',
+      authors: 'Y Zhuo, YG Zhao, Y Zhang',
+      journal: 'Molecules 29 (20), 4854',
+      year: '2024',
+      citations: '179',
+      url: 'https://scholar.google.com/citations?view_op=view_citation&hl=en&user=Q82dL_IAAAAJ&citation_for_view=Q82dL_IAAAAJ:u-x6o8ySG0sC',
+    },
+    {
+      title: 'Ionic liquids in pharmaceutical and biomedical applications: A review',
+      authors: 'Y Zhuo, HL Cheng, YG Zhao, HR Cui',
+      journal: 'Pharmaceutics 16 (1), 151',
+      year: '2024',
+      citations: '115',
+      url: 'https://scholar.google.com/citations?view_op=view_citation&hl=en&user=Q82dL_IAAAAJ&citation_for_view=Q82dL_IAAAAJ:u5HHmVD_uO8C',
+    }
+  ],
+  instagramPostsList: [
+    {
+      url: 'https://www.instagram.com/p/DYuiCVkk3-P/?img_index=1',
+      imageUrl: 'https://www.instagram.com/p/DYuiCVkk3-P/media/?size=l',
+    },
+    {
+      url: 'https://www.instagram.com/p/DMIx7jRSPKK/?img_index=1',
+      imageUrl: 'https://www.instagram.com/p/DMIx7jRSPKK/media/?size=l',
+    },
+    {
+      url: 'https://www.instagram.com/p/DLP3-hRSXX8/?img_index=1',
+      imageUrl: 'https://www.instagram.com/p/DLP3-hRSXX8/media/?size=l',
+    },
+    {
+      url: 'https://www.instagram.com/p/DKs-GxEyxs6/?img_index=1',
+      imageUrl: 'https://www.instagram.com/p/DKs-GxEyxs6/media/?size=l',
+    },
+    {
+      url: 'https://www.instagram.com/p/DDV0IQPTkIs/?img_index=1',
+      imageUrl: 'https://www.instagram.com/p/DDV0IQPTkIs/media/?size=l',
+    },
+    {
+      url: 'https://www.instagram.com/p/DDKLxItObfR/?img_index=1',
+      imageUrl: 'https://www.instagram.com/p/DDKLxItObfR/media/?size=l',
+    }
+  ],
+  bilibiliVideosList: [
+    {
+      title: '【卓越日常】我的读博生存指南 | 论文写作与自律习惯 🎓🔥',
+      playCount: '194K',
+      duration: '14:25',
+      likes: '12K',
+      comments: '3.4K',
+      imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600&h=380',
+      url: 'https://space.bilibili.com',
+    },
+    {
+      title: '科研人日常！当机器学习博士搞起短视频自媒体 📷🤖',
+      playCount: '87K',
+      duration: '11:12',
+      likes: '6.2K',
+      comments: '958',
+      imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=600&h=380',
+      url: 'https://space.bilibili.com',
+    },
+    {
+      title: '极简学术风书房桌面搭建 2.0 | 效率与仪式感并存 💻✨',
+      playCount: '312K',
+      duration: '08:48',
+      likes: '28K',
+      comments: '5.1K',
+      imageUrl: 'https://images.unsplash.com/photo-1585776245991-cf89dd7fc73a?auto=format&fit=crop&q=80&w=600&h=380',
+      url: 'https://space.bilibili.com',
+    }
+  ]
 };
 
 export interface ThemeColors {
@@ -29,7 +122,7 @@ export interface ThemeColors {
   glowingAccent?: string;
 }
 
-export const THEME_PRESETS: Record<ProfileConfig['themePreset'], ThemeColors> = {
+export const THEME_PRESETS: Record<Exclude<ProfileConfig['themePreset'], 'auto'>, ThemeColors> = {
   'warm-sand': {
     name: 'Liquid Amber',
     bg: 'bg-[#FAF6F0] text-[#2F2922] relative overflow-hidden',
@@ -134,33 +227,39 @@ export const MOCK_BILIBILI_VIDEOS = [
 
 export const MOCK_INSTAGRAM_POSTS = [
   {
-    imageUrl: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&q=80&w=300&h=300',
-    likes: '1,421',
-    comments: '46',
+    url: 'https://www.instagram.com/p/DYuiCVkk3-P/?img_index=1',
+    imageUrl: 'https://www.instagram.com/p/DYuiCVkk3-P/media/?size=l',
+    likes: '142',
+    comments: '12',
   },
   {
-    imageUrl: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&q=80&w=300&h=300',
-    likes: '942',
-    comments: '24',
+    url: 'https://www.instagram.com/p/DMIx7jRSPKK/?img_index=1',
+    imageUrl: 'https://www.instagram.com/p/DMIx7jRSPKK/media/?size=l',
+    likes: '98',
+    comments: '8',
   },
   {
-    imageUrl: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&q=80&w=300&h=300',
-    likes: '2,118',
-    comments: '88',
+    url: 'https://www.instagram.com/p/DLP3-hRSXX8/?img_index=1',
+    imageUrl: 'https://www.instagram.com/p/DLP3-hRSXX8/media/?size=l',
+    likes: '120',
+    comments: '15',
   },
   {
-    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=300&h=300',
-    likes: '1,780',
-    comments: '63',
+    url: 'https://www.instagram.com/p/DKs-GxEyxs6/?img_index=1',
+    imageUrl: 'https://www.instagram.com/p/DKs-GxEyxs6/media/?size=l',
+    likes: '175',
+    comments: '19',
   },
   {
-    imageUrl: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=300&h=300',
-    likes: '1,220',
-    comments: '39',
+    url: 'https://www.instagram.com/p/DDV0IQPTkIs/?img_index=1',
+    imageUrl: 'https://www.instagram.com/p/DDV0IQPTkIs/media/?size=l',
+    likes: '210',
+    comments: '26',
   },
   {
-    imageUrl: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&q=80&w=300&h=300',
-    likes: '965',
-    comments: '18',
+    url: 'https://www.instagram.com/p/DDKLxItObfR/?img_index=1',
+    imageUrl: 'https://www.instagram.com/p/DDKLxItObfR/media/?size=l',
+    likes: '114',
+    comments: '9',
   },
 ];

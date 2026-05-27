@@ -1,222 +1,95 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 
 const app = express();
 const PORT = 3000;
 
-// Set up server-side cache to bypass strict rate limit blocks
-interface StatsCache {
-  data: any | null;
-  lastUpdated: number;
-}
-let profileStatsCache: StatsCache = {
-  data: null,
-  lastUpdated: 0,
-};
+// Enable JSON bodies parsing
+app.use(express.json());
 
-// Helper to perform fetch with a maximum timeout duration
-async function fetchWithTimeout(url: string, options: any = {}, timeout = 3000): Promise<Response> {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
+const CONFIG_FILE_PATH = path.join(process.cwd(), 'profile-config.json');
+
+// Helper to load config
+function loadSavedConfig() {
   try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    });
-    clearTimeout(id);
-    return response;
-  } catch (error) {
-    clearTimeout(id);
-    throw error;
-  }
-}
-
-// Auto update and scrapes profiles
-async function scrapeDynamicStats() {
-  const stats = {
-    scholar: {
-      citations: 294, // Updated real default sum (179 + 115) to prevent citation resets to 2 if scraper is blocked
-      hIndex: 5,
-      i10Index: 5,
-      name: 'Zhuo Yue',
-      avatar: 'https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=Q82dL_IAAAAJ',
-      papers: [] as any[],
-    },
-    bilibili: {
-      follower: 18500,
-      following: 120,
-      views: 650000,
-      likes: 28000,
-      name: '卓呆呆啦啦啦',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200&h=200',
-      bio: 'NUS master\'s student currently studying biomedical engineering. Beyond research, I explore photography, especially film photography, alongside PC building and driving.',
-      videos: [] as any[],
-    },
-    instagram: {
-      follower: '2.4K',
-      following: '450',
-      posts: '128',
-      name: 'Jason Zhao (@jasonlalala_zy)',
-      avatar: '',
-      bio: 'Living, learning, and framing lifestyle moments.',
-    }
-  };
-
-  // 1. Scraping Google Scholar
-  try {
-    const response = await fetchWithTimeout('https://scholar.google.com/citations?user=Q82dL_IAAAAJ&hl=en', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-      }
-    });
-    if (response.ok) {
-      const html = await response.text();
-      
-      // Extraction of core metrics
-      const stdMatches = [...html.matchAll(/<td class="gsc_rsb_std">([0-9,]+)<\/td>/g)].map(m => parseInt(m[1].replace(/,/g, ''), 10));
-      if (stdMatches.length > 0) {
-        stats.scholar.citations = stdMatches[0] || stats.scholar.citations;
-        stats.scholar.hIndex = stdMatches[2] || stats.scholar.hIndex;
-        stats.scholar.i10Index = stdMatches[4] || stats.scholar.i10Index;
-      }
-
-      // Name extraction
-      const nameMatch = html.match(/id="gsc_prf_in">([^<]+)</);
-      if (nameMatch) {
-        stats.scholar.name = nameMatch[1].trim();
-      }
-
-      // Avatar extraction
-      const avatarMatch = html.match(/id="gsc_prf_pup-art"\s*src="([^"]+)"/);
-      if (avatarMatch) {
-        let scholarAvatar = avatarMatch[1];
-        if (!scholarAvatar.startsWith('http')) {
-          scholarAvatar = 'https://scholar.google.com' + scholarAvatar;
-        }
-        stats.scholar.avatar = scholarAvatar;
-      }
-
-      // Top Publication papers extraction
-      const paperRows = html.match(/<tr class="gsc_a_tr">([\s\S]*?)<\/tr>/g);
-      if (paperRows) {
-        const parsedPapers = [];
-        for (const row of paperRows.slice(0, 5)) {
-          const titleMatch = row.match(/class="gsc_a_at">([^<]+)<\/a>/);
-          const authorMatch = row.match(/<div class="gs_gray">([^<]+)<\/div>/);
-          const venueMatches = [...row.matchAll(/<div class="gs_gray">([\s\S]*?)<\/div>/g)];
-          const yearMatch = row.match(/<span class="gsc_a_h gsc_a_y">(\d+)<\/span>/);
-          const citeMatch = row.match(/class="gsc_a_ac[^"]*">([\s\S]*?)<\/a>/);
-          const linkMatch = row.match(/href="([^"]+)"\s*class="gsc_a_at"/);
-
-          const title = titleMatch ? titleMatch[1].trim() : '';
-          const authors = authorMatch ? authorMatch[1].trim() : '';
-          const venueText = venueMatches[1] ? venueMatches[1][1].trim() : '';
-          const year = yearMatch ? yearMatch[1] : '2025';
-          const citeVal = citeMatch ? parseInt(citeMatch[1].trim().replace(/[^0-9]/g, '') || '0', 10) : 0;
-          const link = linkMatch ? 'https://scholar.google.com' + linkMatch[1].replace(/&amp;/g, '&') : '';
-
-          if (title) {
-            parsedPapers.push({
-              title,
-              authors,
-              journal: venueText ? venueText.replace(/,\s*\d+$/, '') : 'Publication Venue Info',
-              year,
-              citations: citeVal,
-              url: link
-            });
-          }
-        }
-        if (parsedPapers.length > 0) {
-          stats.scholar.papers = parsedPapers;
-        }
-      }
+    if (fs.existsSync(CONFIG_FILE_PATH)) {
+      const raw = fs.readFileSync(CONFIG_FILE_PATH, 'utf-8');
+      return JSON.parse(raw);
     }
   } catch (err) {
-    console.error('Error fetching/scraping Google Scholar:', err);
+    console.error('Error reading saved config file:', err);
   }
-
-  // 2. Fetching Bilibili
-  try {
-    const headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Referer': 'https://space.bilibili.com/284956483'
-    };
-
-    const [infoRes, statRes, upstatRes] = await Promise.all([
-      fetchWithTimeout('https://api.bilibili.com/x/space/acc/info?mid=284956483', { headers }).then(r => r.json() as any).catch(() => null),
-      fetchWithTimeout('https://api.bilibili.com/x/relation/stat?vmid=284956483', { headers }).then(r => r.json() as any).catch(() => null),
-      fetchWithTimeout('https://api.bilibili.com/x/space/upstat?mid=284956483', { headers }).then(r => r.json() as any).catch(() => null),
-    ]);
-
-    if (infoRes && infoRes.code === 0 && infoRes.data) {
-      stats.bilibili.name = infoRes.data.name || stats.bilibili.name;
-      stats.bilibili.avatar = infoRes.data.face || stats.bilibili.avatar;
-      stats.bilibili.bio = infoRes.data.sign || stats.bilibili.bio;
-    }
-
-    if (statRes && statRes.code === 0 && statRes.data) {
-      stats.bilibili.follower = statRes.data.follower || stats.bilibili.follower;
-      stats.bilibili.following = statRes.data.following || stats.bilibili.following;
-    }
-
-    if (upstatRes && upstatRes.code === 0 && upstatRes.data) {
-      stats.bilibili.views = upstatRes.data.archive?.view || stats.bilibili.views;
-      stats.bilibili.likes = upstatRes.data.likes || stats.bilibili.likes;
-    }
-  } catch (err) {
-    console.error('Error fetching Bilibili APIs:', err);
-  }
-
-  // 3. Scraping Instagram
-  try {
-    const res = await fetchWithTimeout('https://www.instagram.com/jasonlalala_zy/', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-      }
-    });
-    if (res.ok) {
-      const text = await res.text();
-      // Scan for meta content tags containing numbers and Followers/Following keywords
-      const followersMatch = text.match(/([0-9,.]+)\s*Followers/i);
-      const followingMatch = text.match(/([0-9,.]+)\s*Following/i);
-      const postsMatch = text.match(/([0-9,.]+)\s*Posts/i);
-
-      if (followersMatch) stats.instagram.follower = followersMatch[1];
-      if (followingMatch) stats.instagram.following = followingMatch[1];
-      if (postsMatch) stats.instagram.posts = postsMatch[1];
-
-      const nameMatch = text.match(/<title>([^<]+)<\/title>/i);
-      if (nameMatch) {
-        const rawTitle = nameMatch[1].trim(); // Usually is: "Jason Zhao (@jasonlalala_zy) • Instagram photos and videos"
-        stats.instagram.name = rawTitle.split('•')[0].trim();
-      }
-    }
-  } catch (err) {
-    console.error('Error scraping Instagram details:', err);
-  }
-
-  return stats;
+  return null;
 }
 
-// REST Endpoint to fetch profile updates
-app.get('/api/profile-stats', async (req, res) => {
-  const cacheDuration = 10 * 60 * 1000; // 10 minute server caching to avoid rate limit bans
-  const now = Date.now();
+// REST Endpoint to fetch profile-config
+app.get('/api/profile-config', (req, res) => {
+  const config = loadSavedConfig();
+  res.json({ config });
+});
 
-  if (profileStatsCache.data && (now - profileStatsCache.lastUpdated) < cacheDuration) {
-    return res.json({ ...profileStatsCache.data, fromCache: true });
+// REST Endpoint to update profile-config with password check
+app.post('/api/profile-config', (req, res) => {
+  const { username, password, config } = req.body;
+
+  // Verify administrator credentials details
+  if (username !== 'zhuoyue1102' || password !== 'zhuoyue1102') {
+    return res.status(401).json({ success: false, error: 'Incorrect administrator credentials.' });
   }
 
-  const freshStats = await scrapeDynamicStats();
-  profileStatsCache = {
-    data: freshStats,
-    lastUpdated: now,
-  };
+  if (!config) {
+    return res.status(400).json({ success: false, error: 'Missing configuration payload.' });
+  }
 
-  res.json({ ...freshStats, fromCache: false });
+  try {
+    fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config, null, 2), 'utf-8');
+    res.json({ success: true, config });
+  } catch (err: any) {
+    console.error('Failed to save profile config:', err);
+    res.status(500).json({ success: false, error: 'Failed to write config storage on server.' });
+  }
+});
+
+// Mock/Static Endpoint to fetch profile stats derived from the edited profile-config
+app.get('/api/profile-stats', (req, res) => {
+  const saved = loadSavedConfig();
+  
+  if (saved) {
+    res.json({
+      scholar: {
+        citations: saved.scholarCitations ? parseInt(saved.scholarCitations.replace(/,/g, ''), 10) : 294,
+        hIndex: saved.scholarHIndex ? parseInt(saved.scholarHIndex.replace(/,/g, ''), 10) : 5,
+        i10Index: saved.scholarI10Index ? parseInt(saved.scholarI10Index.replace(/,/g, ''), 10) : 5,
+        name: saved.scholarName || saved.scholarUsername || 'Zhuo Yue',
+        papers: []
+      },
+      bilibili: {
+        follower: saved.bilibiliFollower ? parseInt(saved.bilibiliFollower.replace(/,/g, ''), 10) : 18500,
+        following: saved.bilibiliFollowing ? parseInt(saved.bilibiliFollowing.replace(/,/g, ''), 10) : 120,
+        views: saved.bilibiliViews ? parseInt(saved.bilibiliViews.replace(/,/g, ''), 10) : 650000,
+        likes: saved.bilibiliLikes ? parseInt(saved.bilibiliLikes.replace(/,/g, ''), 10) : 28000,
+        name: saved.bilibiliName || '卓越的日常',
+        bio: saved.bilibiliBio || '卓呆呆啦啦啦 | UID: 284956483',
+        videos: []
+      },
+      instagram: {
+        follower: saved.instagramFollower || '1,520',
+        following: saved.instagramFollowing || '450',
+        posts: saved.instagramPosts || '128',
+        name: saved.instagramName || 'Jason Zhao (@jasonlalala_zy)',
+        bio: saved.instagramBio || 'Living, learning, and framing lifestyle moments.',
+      }
+    });
+  } else {
+    // Default fallback stats
+    res.json({
+      scholar: { citations: 294, hIndex: 5, i10Index: 5, name: 'Zhuo Yue', papers: [] },
+      bilibili: { follower: 18500, following: 120, views: 650000, likes: 28000, name: '卓越的日常', bio: '卓呆呆啦啦啦 | UID: 284956483', videos: [] },
+      instagram: { follower: '1,520', following: '450', posts: '128', name: 'Jason Zhao (@jasonlalala_zy)', bio: 'Living, learning, and framing lifestyle moments.' }
+    });
+  }
 });
 
 // Setup Vite & static assets routing
@@ -236,7 +109,7 @@ async function initServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Dynamic stats server active at http://0.0.0.0:${PORT}`);
+    console.log(`Server running at http://0.0.0.0:${PORT}`);
   });
 }
 

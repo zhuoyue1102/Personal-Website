@@ -11,9 +11,9 @@ export const DEFAULT_PROFILE: ProfileConfig = {
   instagramUrl: 'https://www.instagram.com/jasonlalala_zy/',
   instagramUsername: '@jasonlalala_zy',
   bilibiliUrl: 'https://space.bilibili.com/284956483',
-  bilibiliUsername: '卓越的日常 (UID 284956483)',
+  bilibiliUsername: '卓呆呆啦啦啦 (UID 284956483)',
   scholarUrl: 'https://scholar.google.com/citations?user=Q82dL_IAAAAJ&hl=en',
-  scholarUsername: 'Zhuo Yue / 卓越',
+  scholarUsername: 'Zhuo Yue',
   themePreset: 'cosmic',
 };
 
@@ -89,8 +89,16 @@ export const MOCK_SCHOLAR_PAPERS = [
     authors: 'Y Zhuo, YG Zhao, Y Zhang',
     journal: 'Molecules 29 (20), 4854',
     year: '2024',
-    citations: 2,
-    url: 'https://scholar.google.com/citations?user=Q82dL_IAAAAJ&hl=en',
+    citations: 179,
+    url: 'https://scholar.google.com/citations?view_op=view_citation&hl=en&user=Q82dL_IAAAAJ&citation_for_view=Q82dL_IAAAAJ:u-x6o8ySG0sC',
+  },
+  {
+    title: 'Ionic liquids in pharmaceutical and biomedical applications: A review',
+    authors: 'Y Zhuo, HL Cheng, YG Zhao, HR Cui',
+    journal: 'Pharmaceutics 16 (1), 151',
+    year: '2024',
+    citations: 115,
+    url: 'https://scholar.google.com/citations?view_op=view_citation&hl=en&user=Q82dL_IAAAAJ&citation_for_view=Q82dL_IAAAAJ:u5HHmVD_uO8C',
   }
 ];
 

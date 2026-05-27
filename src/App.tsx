@@ -15,14 +15,12 @@ export default function App() {
         // Automatically upgrade to new NUS BME details if old default is detected
         if (
           parsed.name === 'Zhuoyue Zhao' ||
-          parsed.avatarUrl?.includes('profile_photo_1779758202074') ||
           parsed.title === "Master's Student & Digital Lifestyle Creator" ||
           parsed.title === "PhD Candidate & Digital Lifestyle Creator" ||
           parsed.location === 'Shanghai, China' ||
           parsed.location === 'Zhejiang, China' ||
           parsed.bio?.includes('Ph.D. student researching') ||
-          parsed.bio?.includes('capture everyday beauty') ||
-          parsed.bio?.endsWith('driving')
+          parsed.bio?.includes('capture everyday beauty')
         ) {
           return DEFAULT_PROFILE;
         }

@@ -1,0 +1,6 @@
+{
+  "name": "Link Showcase",
+  "description": "A beautiful, premium personal website showcasing links to Instagram, Bilibili, and Google Scholar with custom themes and self-editing capability.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

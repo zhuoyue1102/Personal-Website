@@ -15,14 +15,31 @@ let profileStatsCache: StatsCache = {
   lastUpdated: 0,
 };
 
+// Helper to perform fetch with a maximum timeout duration
+async function fetchWithTimeout(url: string, options: any = {}, timeout = 3000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
 // Auto update and scrapes profiles
 async function scrapeDynamicStats() {
   const stats = {
     scholar: {
-      citations: 2,
-      hIndex: 2,
-      i10Index: 2,
-      name: 'Y Zhuo',
+      citations: 294, // Updated real default sum (179 + 115) to prevent citation resets to 2 if scraper is blocked
+      hIndex: 5,
+      i10Index: 5,
+      name: 'Zhuo Yue',
       avatar: 'https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=Q82dL_IAAAAJ',
       papers: [] as any[],
     },
@@ -31,9 +48,9 @@ async function scrapeDynamicStats() {
       following: 120,
       views: 650000,
       likes: 28000,
-      name: '卓越日常Space',
+      name: '卓呆呆啦啦啦',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200&h=200',
-      bio: '机器学习博士在读 / 自媒体 Vlogger 🎨🤖',
+      bio: 'NUS master\'s student currently studying biomedical engineering. Beyond research, I explore photography, especially film photography, alongside PC building and driving.',
       videos: [] as any[],
     },
     instagram: {
@@ -48,7 +65,7 @@ async function scrapeDynamicStats() {
 
   // 1. Scraping Google Scholar
   try {
-    const response = await fetch('https://scholar.google.com/citations?user=Q82dL_IAAAAJ&hl=en', {
+    const response = await fetchWithTimeout('https://scholar.google.com/citations?user=Q82dL_IAAAAJ&hl=en', {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept-Language': 'en-US,en;q=0.9',
@@ -128,9 +145,9 @@ async function scrapeDynamicStats() {
     };
 
     const [infoRes, statRes, upstatRes] = await Promise.all([
-      fetch('https://api.bilibili.com/x/space/acc/info?mid=284956483', { headers }).then(r => r.json() as any).catch(() => null),
-      fetch('https://api.bilibili.com/x/relation/stat?vmid=284956483', { headers }).then(r => r.json() as any).catch(() => null),
-      fetch('https://api.bilibili.com/x/space/upstat?mid=284956483', { headers }).then(r => r.json() as any).catch(() => null),
+      fetchWithTimeout('https://api.bilibili.com/x/space/acc/info?mid=284956483', { headers }).then(r => r.json() as any).catch(() => null),
+      fetchWithTimeout('https://api.bilibili.com/x/relation/stat?vmid=284956483', { headers }).then(r => r.json() as any).catch(() => null),
+      fetchWithTimeout('https://api.bilibili.com/x/space/upstat?mid=284956483', { headers }).then(r => r.json() as any).catch(() => null),
     ]);
 
     if (infoRes && infoRes.code === 0 && infoRes.data) {
@@ -154,7 +171,7 @@ async function scrapeDynamicStats() {
 
   // 3. Scraping Instagram
   try {
-    const res = await fetch('https://www.instagram.com/jasonlalala_zy/', {
+    const res = await fetchWithTimeout('https://www.instagram.com/jasonlalala_zy/', {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept-Language': 'en-US,en;q=0.9',

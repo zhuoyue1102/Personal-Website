@@ -79,26 +79,65 @@ export default function App() {
     localStorage.setItem('personal_links_config', JSON.stringify(config));
   }, [config]);
 
-  // Determine if it is currently daytime (6:00 AM to 6:00 PM) for the visitor
-  const [isDay, setIsDay] = useState(() => {
-    const hour = new Date().getHours();
-    return hour >= 6 && hour < 18;
-  });
-
-  // Periodically refresh the day/night state in case they leave page open
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const handle = setInterval(() => {
-      const hour = new Date().getHours();
-      setIsDay(hour >= 6 && hour < 18);
-    }, 60000);
-    return () => clearInterval(handle);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Determine if it is currently dark mode in the system
+  const [systemDark, setSystemDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  const [isThemeHovered, setIsThemeHovered] = useState(false);
+
   const resolvedPreset = config.themePreset === 'auto'
-    ? (isDay ? 'warm-sand' : 'cosmic')
+    ? (systemDark ? 'cosmic' : 'warm-sand')
     : config.themePreset;
 
   const activeTheme = THEME_PRESETS[resolvedPreset] || THEME_PRESETS['warm-sand'];
+
+  const handleCycleTheme = () => {
+    const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let nextPreset: ProfileConfig['themePreset'] = 'auto';
+
+    if (isSystemDark) {
+      // Cycle: auto -> warm-sand -> cosmic -> auto
+      if (config.themePreset === 'auto') {
+        nextPreset = 'warm-sand';
+      } else if (config.themePreset === 'warm-sand') {
+        nextPreset = 'cosmic';
+      } else {
+        nextPreset = 'auto';
+      }
+    } else {
+      // Cycle: auto -> cosmic -> warm-sand -> auto
+      if (config.themePreset === 'auto') {
+        nextPreset = 'cosmic';
+      } else if (config.themePreset === 'cosmic') {
+        nextPreset = 'warm-sand';
+      } else {
+        nextPreset = 'auto';
+      }
+    }
+
+    setConfig(prev => ({ ...prev, themePreset: nextPreset }));
+  };
 
   const handleSave = (newConfig: ProfileConfig) => {
     setConfig(newConfig);
@@ -160,15 +199,22 @@ export default function App() {
       </div>
 
       {/* Dynamic Background Banner Cover */}
-      <div className="h-56 md:h-64 w-full relative overflow-hidden shrink-0 shadow-sm">
-        <img
-          src={config.bannerUrl}
-          alt="Personal Banner"
-          referrerPolicy="no-referrer"
-          className="w-full h-full object-cover select-none"
-        />
+      <div className="h-56 md:h-64 w-full relative overflow-hidden shrink-0 shadow-sm bg-zinc-950">
+        <AnimatePresence>
+          <motion.img
+            key={resolvedPreset === 'cosmic' ? 'dark' : 'light'}
+            src={resolvedPreset === 'cosmic' ? (config.darkBannerUrl || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1200&h=400') : config.bannerUrl}
+            alt="Personal Banner"
+            referrerPolicy="no-referrer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            className="w-full h-full object-cover select-none absolute inset-0"
+          />
+        </AnimatePresence>
         {/* Transparent glass overlay style */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none z-10" />
       </div>
 
       {/* Main Single-View responsive container */}
@@ -186,9 +232,9 @@ export default function App() {
             <div className={`absolute inset-0 bg-gradient-to-br ${activeTheme.glowingAccent} pointer-events-none`} />
           )}
 
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 relative z-10">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 relative z-10 w-full">
             {/* Avatar & text details */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left w-full">
               <div className="relative group shrink-0">
                 <div className="absolute -inset-1.5 bg-gradient-to-tr from-indigo-500 via-pink-500 to-amber-400 rounded-2xl opacity-75 blur-md group-hover:opacity-100 transition duration-500" />
                 <div className="relative w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border-4 border-white dark:border-zinc-900 bg-zinc-200">
@@ -201,71 +247,119 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="mt-1">
-                <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                  <h1 className={`font-display text-3xl md:text-4xl font-black tracking-tight ${activeTheme.textPrimary}`}>
-                    {config.name}
-                  </h1>
-                  <span className="flex items-center gap-1 text-[11px] font-mono px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-500 font-bold border border-indigo-500/15">
-                    <Sparkles className="w-3 h-3 text-amber-500" /> NUS BME
-                  </span>
+              <div className="mt-1 flex-1 flex flex-col sm:flex-row sm:items-end justify-between gap-4 w-full">
+                <div className="text-center sm:text-left">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                    <h1
+                      className={`font-display text-3xl md:text-4xl font-black tracking-tight ${activeTheme.textPrimary}`}
+                      style={{ height: '58px', lineHeight: '48.2px', display: 'flex', alignItems: 'center' }}
+                    >
+                      {config.name}
+                    </h1>
+                  </div>
+
+                  <p
+                    className={`text-sm font-mono font-medium mt-1 text-indigo-500 dark:text-indigo-400`}
+                    style={{ lineHeight: '1.4', fontSize: '15px', fontWeight: 'bold', textAlign: 'center', height: isMobile ? 'auto' : '17px' }}
+                  >
+                    {config.title}
+                  </p>
+
+                  {/* Badges for locations and details */}
+                  <div className="flex items-center justify-center sm:justify-start gap-4 mt-3 flex-wrap text-xs font-mono font-medium">
+                    {config.location && (
+                      <span
+                        className={`flex items-center gap-1 ${activeTheme.textSecondary}`}
+                        style={{ fontSize: '13px', lineHeight: '1.4' }}
+                      >
+                        <MapPin className="w-3.5 h-3.5" /> {config.location}
+                      </span>
+                    )}
+                    {config.email && (
+                      <a
+                        href={`mailto:${config.email}`}
+                        className={`flex items-center gap-1 hover:text-indigo-500 transition-colors ${activeTheme.textSecondary}`}
+                        style={{ fontSize: '13px', lineHeight: '1.4' }}
+                      >
+                        <Mail className="w-3.5 h-3.5" /> {config.email}
+                      </a>
+                    )}
+                  </div>
                 </div>
 
-                <p className={`text-sm font-mono font-medium mt-1.5 text-indigo-500 dark:text-indigo-400`}>
-                  {config.title}
-                </p>
-
-                {/* Badges for locations and details */}
-                <div className="flex items-center justify-center sm:justify-start gap-4 mt-4 flex-wrap text-xs font-mono font-medium">
-                  {config.location && (
-                    <span className={`flex items-center gap-1 ${activeTheme.textSecondary}`}>
-                      <MapPin className="w-3.5 h-3.5" /> {config.location}
-                    </span>
-                  )}
-                  {config.email && (
-                    <a
-                      href={`mailto:${config.email}`}
-                      className={`flex items-center gap-1 hover:text-indigo-500 transition-colors ${activeTheme.textSecondary}`}
-                    >
-                      <Mail className="w-3.5 h-3.5" /> {config.email}
-                    </a>
-                  )}
+                {/* Contact Me action */}
+                <div className="flex sm:flex-col gap-2.5 items-center justify-center sm:items-end self-center sm:self-end w-full sm:w-auto mt-2 sm:mt-0">
+                  <a
+                    href={`mailto:${config.email}`}
+                    className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-semibold font-mono flex items-center justify-center gap-1.5 transition cursor-pointer select-none ${activeTheme.accent} ${activeTheme.accentHover}`}
+                    style={{ height: '36px' }}
+                  >
+                    <Mail className="w-3.5 h-3.5" /> Contact Me
+                  </a>
                 </div>
               </div>
-            </div>
-
-            {/* Contact Me action */}
-            <div className="flex sm:flex-col gap-2.5 items-center justify-center sm:items-end self-center sm:self-end w-full sm:w-auto mt-2 sm:mt-0">
-              <a
-                href={`mailto:${config.email}`}
-                className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-semibold font-mono flex items-center justify-center gap-1.5 transition cursor-pointer select-none ${activeTheme.accent} ${activeTheme.accentHover}`}
-              >
-                <Mail className="w-3.5 h-3.5" /> Contact Me
-              </a>
             </div>
           </div>
 
           {/* Biography paragraph */}
           <div className="mt-6 pt-5 border-t border-black/[0.04] dark:border-white/[0.04] relative z-10 text-center sm:text-left">
-            <p className={`text-sm md:text-base leading-relaxed ${activeTheme.textSecondary}`}>
+            <p className={`text-sm leading-relaxed ${activeTheme.textSecondary}`}>
               {config.bio}
             </p>
           </div>
         </motion.div>
 
-        {/* Cards Spotlight Header */}
+        {/* Cards Spotlight Header with Interactive Theme Switcher */}
         <div className="flex items-center justify-between mb-4 px-2">
           <div className="flex items-center gap-3">
-            <span className={`text-[11px] font-mono tracking-widest uppercase font-bold ${activeTheme.textSecondary}`}>
+            <span className={`text-[17px] font-mono tracking-widest uppercase font-bold ${activeTheme.textSecondary}`}>
               Websites & Links
             </span>
           </div>
 
-          {config.themePreset === 'auto' && (
-            <div className="flex items-center justify-center select-none text-xl md:text-2xl animate-[pulse_2.5s_infinite_ease-in-out]" title={isDay ? "Daytime (Warm Sand)" : "Nighttime (Cosmic Slate)"}>
-              {isDay ? "☀️" : "🌙"}
-            </div>
-          )}
+          <button
+            onClick={handleCycleTheme}
+            onMouseEnter={() => setIsThemeHovered(true)}
+            onMouseLeave={() => setIsThemeHovered(false)}
+            className={`h-8 px-3.5 rounded-full border flex items-center justify-center transition-all duration-300 select-none cursor-pointer active:scale-95 text-xs font-mono font-bold tracking-wider ${
+              resolvedPreset === 'cosmic'
+                ? 'bg-zinc-950/60 border-indigo-500/30 text-indigo-400 hover:border-indigo-500/60 shadow-[0_0_12px_rgba(99,102,241,0.25)] hover:shadow-[0_0_18px_rgba(139,92,246,0.5)] hover:bg-zinc-900/80 hover:px-4'
+                : `bg-white/35 dark:bg-zinc-900/35 border-black/[0.06] dark:border-white/[0.06] hover:bg-white/60 dark:hover:bg-zinc-900/50 hover:px-4 shadow-sm ${activeTheme.textSecondary}`
+            }`}
+            title="Switch Theme Mode"
+          >
+            <AnimatePresence mode="wait">
+              {isThemeHovered ? (
+                <motion.span
+                  key="text"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className={`flex items-center gap-1 shrink-0 whitespace-nowrap text-xs font-mono font-bold uppercase tracking-widest ${
+                    resolvedPreset === 'cosmic' ? 'text-indigo-400' : ''
+                  }`}
+                >
+                  {config.themePreset === 'auto' ? 'System' : (config.themePreset === 'cosmic' ? 'Dark' : 'Light')}
+                </motion.span>
+              ) : (
+                <motion.div
+                  key="icon"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex items-center justify-center shrink-0"
+                >
+                  {resolvedPreset === 'cosmic' ? (
+                    <Moon className="w-4 h-4 text-indigo-400 fill-indigo-400/20" />
+                  ) : (
+                    <Sun className="w-4 h-4 text-amber-500 fill-amber-500/20 animate-[spin_12s_linear_infinite]" />
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </button>
         </div>
 
         {/* Links Cards List (Instagram, Bilibili, Google Scholar) */}
@@ -273,21 +367,6 @@ export default function App() {
           <LinkCard platform="scholar" config={config} colors={activeTheme} liveStats={liveStats} />
           <LinkCard platform="instagram" config={config} colors={activeTheme} liveStats={liveStats} />
           <LinkCard platform="bilibili" config={config} colors={activeTheme} liveStats={liveStats} />
-        </div>
-
-        {/* Developer Sandbox Notice / Setup instructions */}
-        <div className="mt-12 p-5 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex gap-3">
-            <AlertCircle className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-xs font-mono font-bold text-indigo-500 uppercase tracking-widest">
-                Deployable Configuration Sandbox
-              </h4>
-              <p className="text-xs text-gray-500 dark:text-zinc-400 leading-relaxed mt-1">
-                You can instantly customize the names, handles, bios, and redirect destinations by clicking the Floating Design Tool gear in the bottom-right corner! Updates persist locally.
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* Custom humble clean footer (No AI slop elements or logs) */}

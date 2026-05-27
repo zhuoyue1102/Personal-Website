@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Instagram, GraduationCap, Video, ExternalLink, Bookmark, Award, Play, Eye, Flame, Share2, Sparkles, ArrowUpRight } from 'lucide-react';
+import BilibiliIcon from './BilibiliIcon';
 import { ProfileConfig, LinkItem } from '../types';
 import { ThemeColors, MOCK_SCHOLAR_PAPERS, MOCK_BILIBILI_VIDEOS, MOCK_INSTAGRAM_POSTS } from '../data';
 
@@ -63,7 +64,7 @@ export default function LinkCard({ platform, config, colors, liveStats }: LinkCa
           title: 'Bilibili',
           username: config.bilibiliName || liveStats?.bilibili?.name || '卓越的日常',
           url: config.bilibiliUrl,
-          icon: <Video className="w-6 h-6 text-sky-400" id="icon-bilibili" />,
+          icon: <BilibiliIcon className="w-6 h-6 text-sky-400" id="icon-bilibili" />,
           colorTheme: 'from-[#e0f2fe] to-[#bae6fd]',
           badgeText: 'Vlogs & Tech Sharing',
           description: bBio,
@@ -216,7 +217,10 @@ export default function LinkCard({ platform, config, colors, liveStats }: LinkCa
                           referrerPolicy="no-referrer"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white text-xs font-mono font-medium">
+                          <span className="flex items-center gap-1">❤️ {post.likes || '0'}</span>
+                          <span className="flex items-center gap-1">💬 {post.comments || '0'}</span>
+                        </div>
                       </a>
                     ))}
                   </div>
@@ -294,7 +298,7 @@ export default function LinkCard({ platform, config, colors, liveStats }: LinkCa
               : 'bg-black/[0.03] dark:bg-white/[0.04] hover:bg-black/[0.06] dark:hover:bg-white/[0.08] ' + colors.textSecondary
           } cursor-pointer`}
         >
-          {isExpanded ? 'Hide Previews' : `Reveal Feed Preview`}
+          {isExpanded ? 'Hide Previews' : `Reveal Preview`}
         </button>
 
         <a

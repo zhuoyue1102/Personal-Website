@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, Save, Palette, RefreshCw, Sparkles, User, GraduationCap, 
-  Instagram, Video, Lock, LogOut, MapPin, Mail, Image, Link, FileText
+  Instagram, Video, Lock, LogOut, MapPin, Mail, Image, Link, FileText,
+  ArrowUp, ArrowDown
 } from 'lucide-react';
+import BilibiliIcon from './BilibiliIcon';
 import { ProfileConfig } from '../types';
 
 interface EditProfileModalProps {
@@ -37,6 +39,7 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
   const [email, setEmail] = useState(config.email);
   const [avatarUrl, setAvatarUrl] = useState(config.avatarUrl);
   const [bannerUrl, setBannerUrl] = useState(config.bannerUrl);
+  const [darkBannerUrl, setDarkBannerUrl] = useState(config.darkBannerUrl || '');
   const [themePreset, setThemePreset] = useState<ProfileConfig['themePreset']>(config.themePreset);
 
   // Stats input states
@@ -83,8 +86,26 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
     setScholarPapers(scholarPapers.map((paper, i) => i === index ? { ...paper, [field]: value } : paper));
   };
 
+  const handleMovePaperUp = (index: number) => {
+    if (index === 0) return;
+    const newList = [...scholarPapers];
+    const temp = newList[index];
+    newList[index] = newList[index - 1];
+    newList[index - 1] = temp;
+    setScholarPapers(newList);
+  };
+
+  const handleMovePaperDown = (index: number) => {
+    if (index === scholarPapers.length - 1) return;
+    const newList = [...scholarPapers];
+    const temp = newList[index];
+    newList[index] = newList[index + 1];
+    newList[index + 1] = temp;
+    setScholarPapers(newList);
+  };
+
   const handleAddInstaPost = () => {
-    setInstagramPostsList([...instagramPostsList, { url: '', imageUrl: '' }]);
+    setInstagramPostsList([...instagramPostsList, { url: '', imageUrl: '', likes: '0', comments: '0' }]);
   };
 
   const handleRemoveInstaPost = (index: number) => {
@@ -93,6 +114,24 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
 
   const handleInstaPostChange = (index: number, field: string, value: string) => {
     setInstagramPostsList(instagramPostsList.map((post, i) => i === index ? { ...post, [field]: value } : post));
+  };
+
+  const handleMoveInstaPostUp = (index: number) => {
+    if (index === 0) return;
+    const newList = [...instagramPostsList];
+    const temp = newList[index];
+    newList[index] = newList[index - 1];
+    newList[index - 1] = temp;
+    setInstagramPostsList(newList);
+  };
+
+  const handleMoveInstaPostDown = (index: number) => {
+    if (index === instagramPostsList.length - 1) return;
+    const newList = [...instagramPostsList];
+    const temp = newList[index];
+    newList[index] = newList[index + 1];
+    newList[index + 1] = temp;
+    setInstagramPostsList(newList);
   };
 
   const handleAddBiliVideo = () => {
@@ -107,6 +146,24 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
     setBilibiliVideosList(bilibiliVideosList.map((video, i) => i === index ? { ...video, [field]: value } : video));
   };
 
+  const handleMoveBiliVideoUp = (index: number) => {
+    if (index === 0) return;
+    const newList = [...bilibiliVideosList];
+    const temp = newList[index];
+    newList[index] = newList[index - 1];
+    newList[index - 1] = temp;
+    setBilibiliVideosList(newList);
+  };
+
+  const handleMoveBiliVideoDown = (index: number) => {
+    if (index === bilibiliVideosList.length - 1) return;
+    const newList = [...bilibiliVideosList];
+    const temp = newList[index];
+    newList[index] = newList[index + 1];
+    newList[index + 1] = temp;
+    setBilibiliVideosList(newList);
+  };
+
   // Sync state whenever configuration changes or modal opens
   useEffect(() => {
     if (isOpen) {
@@ -117,6 +174,7 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
       setEmail(config.email);
       setAvatarUrl(config.avatarUrl);
       setBannerUrl(config.bannerUrl);
+      setDarkBannerUrl(config.darkBannerUrl || '');
       setThemePreset(config.themePreset);
 
       setScholarUrl(config.scholarUrl);
@@ -190,6 +248,7 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
       email,
       avatarUrl,
       bannerUrl,
+      darkBannerUrl,
       themePreset,
       
       scholarUrl,
@@ -269,7 +328,7 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
     label: string;
     colors: string[];
   }> = [
-    { id: 'auto', label: 'Auto (时间自适应)', colors: ['bg-[#FAF6F0]', 'bg-[#09090B]'] },
+    { id: 'auto', label: 'Auto (跟随系统明暗)', colors: ['bg-[#FAF6F0]', 'bg-[#09090B]'] },
     { id: 'warm-sand', label: 'Warm Sand (暖沙☀️)', colors: ['bg-[#FAF6F0]', 'bg-[#765E47]'] },
     { id: 'cosmic', label: 'Cosmic (梦幻极客🌙)', colors: ['bg-[#09090B]', 'bg-[#8B5CF6]'] },
     { id: 'minimal-charcoal', label: 'Charcoal (经典简约)', colors: ['bg-[#F2F4F7]', 'bg-[#0F172A]'] },
@@ -339,7 +398,6 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
                       <Lock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     </div>
                     <h3 className="font-display font-bold text-gray-800 dark:text-zinc-200 text-sm">请输入管理员身份信息以取得编辑权</h3>
-                    <p className="text-[11px] text-gray-400 mt-1">Credentials (zhuoyue1102)</p>
                   </div>
 
                   {loginError && (
@@ -434,7 +492,7 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
                         : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-850'
                     }`}
                   >
-                    <Video className="w-4 h-4 shrink-0" /> 哔哩哔哩
+                    <BilibiliIcon className="w-4 h-4 shrink-0" /> 哔哩哔哩
                   </button>
                 </div>
 
@@ -545,6 +603,19 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
                             onChange={(e) => setBannerUrl(e.target.value)}
                             required
                             className="w-full px-3 py-1.5 rounded-xl text-xs bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 focus:outline-none dark:text-white font-mono"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 font-mono mb-1 flex items-center gap-1">
+                            <Image className="w-3 h-3 text-indigo-500" /> Dark Banner Image URL (深色背景链接)
+                          </label>
+                          <input
+                            type="text"
+                            value={darkBannerUrl}
+                            onChange={(e) => setDarkBannerUrl(e.target.value)}
+                            className="w-full px-3 py-1.5 rounded-xl text-xs bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 focus:outline-none dark:text-white font-mono"
+                            placeholder="留空则使用默认深色星空壁纸"
                           />
                         </div>
                       </div>
@@ -672,16 +743,38 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
                         <div className="space-y-3">
                           {scholarPapers.map((paper, index) => (
                             <div key={index} className="p-3.5 bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] rounded-xl relative space-y-2.5">
-                              <button
-                                type="button"
-                                onClick={() => handleRemovePaper(index)}
-                                className="absolute top-2 right-2 text-rose-500 hover:text-rose-700 px-2 py-0.5 bg-rose-500/5 hover:bg-rose-500/10 rounded border border-rose-500/15 cursor-pointer text-[10px] font-mono select-none"
-                                title="删除此文献"
-                              >
-                                删除
-                              </button>
-                              
-                              <div className="text-[10px] font-mono text-indigo-500 font-bold">文献 #{index + 1}</div>
+                              <div className="flex justify-between items-center bg-black/[0.01] dark:bg-white/[0.01] pb-1.5 border-b border-black/[0.03] dark:border-white/[0.03]">
+                                <div className="text-[10px] font-mono text-indigo-500 font-bold flex items-center gap-1.5">
+                                  <span>文献 #{index + 1}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMovePaperUp(index)}
+                                    disabled={index === 0}
+                                    className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/5 text-gray-400 hover:text-indigo-500 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer"
+                                    title="上移 (Move Up)"
+                                  >
+                                    <ArrowUp className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMovePaperDown(index)}
+                                    disabled={index === scholarPapers.length - 1}
+                                    className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/5 text-gray-400 hover:text-indigo-500 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer"
+                                    title="下移 (Move Down)"
+                                  >
+                                    <ArrowDown className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                                
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemovePaper(index)}
+                                  className="text-rose-500 hover:text-rose-700 px-2 py-0.5 bg-rose-500/5 hover:bg-rose-500/10 rounded border border-rose-500/15 cursor-pointer text-[10px] font-mono select-none"
+                                  title="删除此文献"
+                                >
+                                  删除
+                                </button>
+                              </div>
                               
                               <div>
                                 <label className="block text-[9px] font-mono tracking-wider font-bold text-gray-400 mb-0.5">论文标题 (Title)</label>
@@ -873,7 +966,29 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
                           {instagramPostsList.map((post, index) => (
                             <div key={index} className="p-3.5 bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] rounded-xl relative space-y-2.5 flex gap-4 items-start">
                               <div className="flex-1 space-y-2">
-                                <div className="text-[10px] font-mono text-pink-500 font-bold">帖子 #{index + 1}</div>
+                                <div className="text-[10px] font-mono text-pink-500 font-bold flex items-center justify-between bg-black/[0.01] dark:bg-white/[0.01] pb-1 border-b border-black/[0.03] dark:border-white/[0.03] mb-1.5">
+                                  <div className="flex items-center gap-1.5">
+                                    <span>帖子 #{index + 1}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveInstaPostUp(index)}
+                                      disabled={index === 0}
+                                      className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/5 text-gray-400 hover:text-pink-500 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer"
+                                      title="上移 (Move Up)"
+                                    >
+                                      <ArrowUp className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveInstaPostDown(index)}
+                                      disabled={index === instagramPostsList.length - 1}
+                                      className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/5 text-gray-400 hover:text-pink-500 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer"
+                                      title="下移 (Move Down)"
+                                    >
+                                      <ArrowDown className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
                                 
                                 <div>
                                   <label className="block text-[9px] font-mono tracking-wider font-bold text-gray-400 mb-0.5">图片链接 (Image URL)</label>
@@ -895,6 +1010,29 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
                                     className="w-full px-2.5 py-1 rounded-lg text-xs bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-805 focus:outline-none dark:text-white font-mono"
                                     placeholder="https://instagram.com/p/..."
                                   />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="block text-[9px] font-mono tracking-wider font-bold text-gray-400 mb-0.5">点赞数, eg '142' (Likes)</label>
+                                    <input
+                                      type="text"
+                                      value={post.likes || ''}
+                                      onChange={(e) => handleInstaPostChange(index, 'likes', e.target.value)}
+                                      className="w-full px-2.5 py-1 rounded-lg text-xs bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-805 focus:outline-none dark:text-white font-mono"
+                                      placeholder="e.g. 142"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[9px] font-mono tracking-wider font-bold text-gray-400 mb-0.5">评论数, eg '12' (Comments)</label>
+                                    <input
+                                      type="text"
+                                      value={post.comments || ''}
+                                      onChange={(e) => handleInstaPostChange(index, 'comments', e.target.value)}
+                                      className="w-full px-2.5 py-1 rounded-lg text-xs bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-805 focus:outline-none dark:text-white font-mono"
+                                      placeholder="e.g. 12"
+                                    />
+                                  </div>
                                 </div>
                               </div>
 
@@ -921,7 +1059,7 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
                   {activeTab === 'bilibili' && (
                     <div className="space-y-4">
                       <h4 className="text-xs uppercase tracking-wider font-mono font-bold text-indigo-500 flex items-center gap-1.5">
-                        <Video className="w-4 h-4 text-sky-455" /> 4. Bilibili Vlogs Specs (哔哩哔哩名片)
+                        <BilibiliIcon className="w-4 h-4 text-sky-400" /> 4. Bilibili Vlogs Specs (哔哩哔哩名片)
                       </h4>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1034,16 +1172,38 @@ export default function EditProfileModal({ isOpen, onClose, config, onSave, onRe
                         <div className="space-y-3">
                           {bilibiliVideosList.map((video, index) => (
                             <div key={index} className="p-3.5 bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] rounded-xl relative space-y-2.5">
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveBiliVideo(index)}
-                                className="absolute top-2 right-2 text-rose-500 hover:text-rose-700 px-2 py-0.5 bg-rose-500/5 hover:bg-rose-500/10 rounded border border-rose-500/15 cursor-pointer text-[10px] font-mono select-none"
-                                title="删除此视频"
-                              >
-                                删除
-                              </button>
-                              
-                              <div className="text-[10px] font-mono text-sky-500 font-bold">视频 #{index + 1}</div>
+                              <div className="flex justify-between items-center bg-black/[0.01] dark:bg-white/[0.01] pb-1.5 border-b border-black/[0.03] dark:border-white/[0.03]">
+                                <div className="text-[10px] font-mono text-sky-500 font-bold flex items-center gap-1.5">
+                                  <span>视频 #{index + 1}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveBiliVideoUp(index)}
+                                    disabled={index === 0}
+                                    className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/5 text-gray-400 hover:text-sky-500 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer"
+                                    title="上移 (Move Up)"
+                                  >
+                                    <ArrowUp className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveBiliVideoDown(index)}
+                                    disabled={index === bilibiliVideosList.length - 1}
+                                    className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/5 text-gray-400 hover:text-sky-500 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer"
+                                    title="下移 (Move Down)"
+                                  >
+                                    <ArrowDown className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                                
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveBiliVideo(index)}
+                                  className="text-rose-500 hover:text-rose-700 px-2 py-0.5 bg-rose-500/5 hover:bg-rose-500/10 rounded border border-rose-500/15 cursor-pointer text-[10px] font-mono select-none"
+                                  title="删除此视频"
+                                >
+                                  删除
+                                </button>
+                              </div>
                               
                               <div>
                                 <label className="block text-[9px] font-mono tracking-wider font-bold text-gray-400 mb-0.5">视频标题 (Video Title)</label>

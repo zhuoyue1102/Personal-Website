@@ -19,6 +19,8 @@ export interface ScholarPaper {
 export interface InstagramPost {
   url: string;
   imageUrl: string;
+  likes?: string;
+  comments?: string;
 }
 
 export interface BilibiliVideo {
@@ -39,6 +41,7 @@ export interface ProfileConfig {
   email: string;
   avatarUrl: string;
   bannerUrl: string;
+  darkBannerUrl?: string;
   instagramUrl: string;
   instagramUsername: string;
   bilibiliUrl: string;

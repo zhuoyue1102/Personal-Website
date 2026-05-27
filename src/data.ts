@@ -7,7 +7,8 @@ export const DEFAULT_PROFILE: ProfileConfig = {
   location: 'Ningbo / Singapore',
   email: 'zhuoyue1102@gmail.com',
   avatarUrl: '/src/assets/images/profile_photo_new_1779843145487.png',
-  bannerUrl: '/src/assets/images/cool_blue_banner_1779759567481.png',
+  bannerUrl: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&q=80&w=1200&h=400',
+  darkBannerUrl: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1200&h=400',
   instagramUrl: 'https://www.instagram.com/jasonlalala_zy/',
   instagramUsername: '@jasonlalala_zy',
   bilibiliUrl: 'https://space.bilibili.com/284956483',
@@ -57,26 +58,38 @@ export const DEFAULT_PROFILE: ProfileConfig = {
     {
       url: 'https://www.instagram.com/p/DYuiCVkk3-P/?img_index=1',
       imageUrl: 'https://www.instagram.com/p/DYuiCVkk3-P/media/?size=l',
+      likes: '142',
+      comments: '12',
     },
     {
       url: 'https://www.instagram.com/p/DMIx7jRSPKK/?img_index=1',
       imageUrl: 'https://www.instagram.com/p/DMIx7jRSPKK/media/?size=l',
+      likes: '98',
+      comments: '8',
     },
     {
       url: 'https://www.instagram.com/p/DLP3-hRSXX8/?img_index=1',
       imageUrl: 'https://www.instagram.com/p/DLP3-hRSXX8/media/?size=l',
+      likes: '120',
+      comments: '15',
     },
     {
       url: 'https://www.instagram.com/p/DKs-GxEyxs6/?img_index=1',
       imageUrl: 'https://www.instagram.com/p/DKs-GxEyxs6/media/?size=l',
+      likes: '175',
+      comments: '19',
     },
     {
       url: 'https://www.instagram.com/p/DDV0IQPTkIs/?img_index=1',
       imageUrl: 'https://www.instagram.com/p/DDV0IQPTkIs/media/?size=l',
+      likes: '210',
+      comments: '26',
     },
     {
       url: 'https://www.instagram.com/p/DDKLxItObfR/?img_index=1',
       imageUrl: 'https://www.instagram.com/p/DDKLxItObfR/media/?size=l',
+      likes: '114',
+      comments: '9',
     }
   ],
   bilibiliVideosList: [

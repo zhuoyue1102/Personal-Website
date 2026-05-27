@@ -1,0 +1,61 @@
+{
+  "name": "Zhuo Yue",
+  "title": "Content Creator & Academic Researcher",
+  "bio": "NUS master's student currently studying biomedical engineering. Beyond research, I explore photography, especially film photography, alongside PC building and driving.",
+  "location": "Ningbo, China",
+  "email": "zhuoyue1102@gmail.com",
+  "avatarUrl": "/src/assets/images/profile_photo_1779758202074.png",
+  "bannerUrl": "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&q=80&w=1200&h=400",
+  "darkBannerUrl": "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&q=80&w=1200&h=400",
+  "themePreset": "warm-sand",
+  "scholarUrl": "https://scholar.google.com/citations?user=Q82dL_IAAAAJ&hl=en",
+  "scholarUsername": "Zhuoyue Zhao / 赵卓越",
+  "scholarCitations": "294",
+  "scholarHIndex": "5",
+  "scholarI10Index": "5",
+  "scholarName": "Zhuo Yue",
+  "instagramUrl": "https://www.instagram.com/jasonlalala_zy/",
+  "instagramUsername": "@jasonlalala_zy",
+  "instagramFollower": "26",
+  "instagramFollowing": "450",
+  "instagramPosts": "128",
+  "instagramName": "Jason Zhao (@jasonlalala_zy)",
+  "instagramBio": "Living, learning, and framing lifestyle moments.",
+  "bilibiliUrl": "https://space.bilibili.com/284956483",
+  "bilibiliUsername": "卓越的日常 (UID 284956483)",
+  "bilibiliFollower": "38",
+  "bilibiliFollowing": "120",
+  "bilibiliViews": "650,000",
+  "bilibiliLikes": "28,000",
+  "bilibiliName": "卓呆呆啦啦啦",
+  "bilibiliBio": "卓呆呆啦啦啦 | UID: 284956483",
+  "scholarPapers": [],
+  "instagramPostsList": [
+    {
+      "url": "https://www.instagram.com/p/DYuiCVkk3-P/?img_index=1",
+      "imageUrl": "src/assets/images/I1.jpg",
+      "likes": "7",
+      "comments": "0"
+    }
+  ],
+  "bilibiliVideosList": [
+    {
+      "title": "【新疆纪行】长这么大总要去趟新疆吧！",
+      "duration": "9:27",
+      "imageUrl": "src/assets/images/B2.png",
+      "url": "https://www.bilibili.com/video/BV14nYdeCE4T/?spm_id_from=333.1387.homepage.video_card.click",
+      "likes": "24",
+      "comments": "7",
+      "playCount": ""
+    },
+    {
+      "title": "《风华·忆》｜ 宁波惠贞书院2021届一班毕业视频",
+      "duration": "5:35",
+      "imageUrl": "src/assets/images/B1.png",
+      "url": "https://www.bilibili.com/video/BV13y4y1M7fn/?spm_id_from=333.1387.homepage.video_card.click&vd_source=92206fc979652c82a107395f12c2b644",
+      "likes": "32",
+      "comments": "15",
+      "playCount": ""
+    }
+  ]
+}
